@@ -1,0 +1,39 @@
+{
+  "name": "nft-stats",
+  "version": "1.0.0",
+  "description": "none",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://muteebahmadkamboh@bitbucket.org/muteebahmadkamboh/nft-stats.git"
+  },
+  "author": "Xosoft Technologies (PVT)",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/muteebahmadkamboh/nft-stats#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "dotenv": "^16.0.0",
+    "express": "~4.16.1",
+    "express-session": "^1.17.0",
+    "express-useragent": "^1.0.15",
+    "http-errors": "~1.6.3",
+    "isodate": "^0.1.4",
+    "mongoose": "^5.13.2",
+    "nodemon": "^2.0.7",
+    "path": "^0.12.7",
+    "request": "^2.65.0"
+  },
+  "engines": {
+    "node": "12.16.1"
+  },
+  "bugs": {
+    "url": "https://bitbucket.org/muteebahmadkamboh/nft-stats/issues"
+  },
+  "keywords": []
+}
