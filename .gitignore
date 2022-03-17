@@ -1,0 +1,9 @@
+.idea/*
+Cookies/*
+/server.js
+DataCsvFiles/*
+node_modules/*
+Pixlate-txt/*
+Pixlate-csv/*
+VideoFiles/*
+*.log
