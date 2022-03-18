@@ -73,4 +73,25 @@ route.get('/getCollectionDetail/:slug', function (req, res) {
     });
 });
 
+route.get('/getTodayTopCollections', function (req, res) {
+
+    Auth.Validate(req, res, function () {
+        var Sort = {"data.stats.one_day_volume": -1};
+
+        Collections.aggregate([
+            {
+                $sort: Sort
+            },
+            {
+                $limit: 9
+            }], (err, result) => {
+            res.send({
+                error: false,
+                data: result,
+            });
+        })
+
+    });
+});
+
 module.exports = route
