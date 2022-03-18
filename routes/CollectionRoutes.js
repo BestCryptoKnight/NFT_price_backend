@@ -28,12 +28,26 @@ route.get('/getCollections/:range', function (req, res) {
                     $sort: Sort
                 },
                 {
+                    $match: {
+                        "data.slug": {$not: {$regex: "^untitled-collection.*"}}
+                    }
+                },
+                {
                     $limit: 50
                 }], (err, result) => {
-                res.send({
-                    error: false,
-                    data: result,
-                });
+
+                if (result != undefined) {
+                    res.send({
+                        error: false,
+                        data: result,
+                    });
+                } else {
+                    res.send({
+                        error: true,
+                        message: "No Data Found",
+                        data: []
+                    });
+                }
             })
         } else {
             res.send({
@@ -43,7 +57,6 @@ route.get('/getCollections/:range', function (req, res) {
         }
     });
 });
-
 
 route.get('/getCollectionDetail/:slug', function (req, res) {
 
@@ -83,7 +96,38 @@ route.get('/getTodayTopCollections', function (req, res) {
                 $sort: Sort
             },
             {
+                $match: {
+                    "data.slug": {$not: {$regex: "^untitled-collection.*"}}
+                }
+            },
+            {
                 $limit: 9
+            }], (err, result) => {
+            res.send({
+                error: false,
+                data: result,
+            });
+        })
+
+    });
+});
+
+route.get('/getSevenDayTopCollections', function (req, res) {
+
+    Auth.Validate(req, res, function () {
+        var Sort = {"data.stats.seven_day_volume": -1};
+
+        Collections.aggregate([
+            {
+                $sort: Sort
+            },
+            {
+                $match: {
+                    "data.slug": {$not: {$regex: "^untitled-collection.*"}}
+                }
+            },
+            {
+                $limit: 4
             }], (err, result) => {
             res.send({
                 error: false,
