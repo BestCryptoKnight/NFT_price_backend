@@ -71,7 +71,6 @@ route.get('/getNftRecent/:slug', function (req, res) {
         if (SlugFilter != undefined) {
 
             Nft.aggregate([
-
                 {
                     $sort: Sort
                 },
@@ -79,10 +78,10 @@ route.get('/getNftRecent/:slug', function (req, res) {
                     $match: {
                         "data.collection.slug": SlugFilter
                     }
+                }, {
+                    $limit: 9
                 }
-
             ], (err, result) => {
-                console.log(result);
                 res.send({
                     error: false,
                     data: result,
@@ -116,7 +115,7 @@ route.get('/getNftTopSelling/:slug', function (req, res) {
                     }
                 },
                 {
-                    $limit: 10
+                    $limit: 12
                 }
             ], (err, result) => {
                 res.send({
