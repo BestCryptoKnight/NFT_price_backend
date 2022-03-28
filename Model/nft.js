@@ -16,6 +16,6 @@ var NftSchema = new Schema({
     //created: new Date()
 });
 
-var NftModel = mongoose.model('nft', NftSchema);
+var NftModel = mongoose.model('nfts', NftSchema, 'nfts');
 
 module.exports = NftModel;
