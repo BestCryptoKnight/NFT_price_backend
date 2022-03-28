@@ -17,5 +17,6 @@ app.get('/healthcheck', function (req, res) {
 
 app.use('/collection', CollectionsRoutes);
 app.use('/nft', NftsRoutes);
+app.use('/traits', require('./routes/RarityRoutes'));
 
 app.listen(PORT, () => console.log(`Cron Jobs server currently running on port ${PORT}`));
