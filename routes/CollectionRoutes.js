@@ -101,7 +101,7 @@ route.get('/getCollectionDetail/:slug', function (req, res) {
                     res.send({
                         error: false,
                         data: result,
-                        latestsale: nft_result[0].data.last_sale
+                        latestsale: (nft_result.length != 0) ? nft_result[0].data.last_sale : null
                     });
 
                 })
