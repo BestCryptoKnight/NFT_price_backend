@@ -5,7 +5,17 @@ var useragent = require('express-useragent');
 route.use(useragent.express());
 
 var Collections = require('../Model/collections');
+var Nft = require('../Model/nft');
 var Auth = require('../Modules/Auth');
+
+/*Nft.aggregate([{
+    $group: {
+        _id: "$data.collection.slug"
+    }
+}], function (err, nft_result) {
+
+    console.log(nft_result);
+})*/
 
 route.get('/getCollections/:range', function (req, res) {
 
@@ -72,10 +82,29 @@ route.get('/getCollectionDetail/:slug', function (req, res) {
                         "data.slug": SlugFilter
                     }
                 }], (err, result) => {
-                res.send({
-                    error: false,
-                    data: result,
-                });
+
+
+                Nft.aggregate([{
+                    $match: {
+                        "data.collection.slug": SlugFilter
+                    }
+                }, {
+                    $sort: {
+                        "data.last_sale.total_price": -1
+                    }
+                }, {
+                    $limit: 1
+                }], function (err, nft_result) {
+
+                    //result.latestsale = nft_result[0].data.last_sale
+
+                    res.send({
+                        error: false,
+                        data: result,
+                        latestsale: nft_result[0].data.last_sale
+                    });
+
+                })
             })
         } else {
             res.send({
