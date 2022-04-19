@@ -6,6 +6,7 @@ route.use(useragent.express());
 
 const Nft = require('../Model/nft');
 var Auth = require('../Modules/Auth');
+const Collections = require("../Model/collections");
 
 route.get('/getNft', function (req, res) {
 
@@ -180,6 +181,82 @@ route.get('/getTraits/:slug', function (req, res) {
             }
         })
 
+    });
+});
+
+route.get('/get-cheaper-and-expensive-nft/:slug', function (req, res) {
+
+    Auth.Validate(req, res, function () {
+        var Sort = {};
+        var SlugFilter = req.params.slug;
+
+        if (SlugFilter != undefined) {
+
+
+            Nft.aggregate([
+                {
+                    $match: {
+                        "data.collection.slug": SlugFilter
+                    }
+                },
+                {
+                    $addFields: {
+                        "data.last_sale.total_price_decimal": {$toDecimal: "$data.last_sale.total_price"},
+                    }
+                },
+                {
+                    $sort: {
+                        "data.last_sale.total_price_decial": -1
+                    }
+                },
+                {
+                    $limit: 1
+                }], function (err, nft_Highest_Price) {
+
+                Nft.aggregate([
+                    {
+                        $match: {
+                            "data.collection.slug": SlugFilter,
+                            "data.last_sale": {
+                                $ne: null
+                            }
+                        }
+                    },
+                    {
+                        $addFields: {
+                            "data.last_sale.total_price_decimal": {$toDecimal: "$data.last_sale.total_price"},
+                        }
+                    },
+                    {
+                        $sort: {
+                            "data.last_sale.total_price_decimal": 1
+                        }
+                    },
+                    {
+                        $limit: 1
+                    }], function (err, nft_Lowest_Price) {
+
+                    console.log(nft_Highest_Price[0].data.last_sale.total_price);
+                    //Median = (nft_Highest_Price[0].last_sale.total_price + nft_Lowest_Price[0].last_sale.total_price) / 2;
+
+                    res.send({
+                        error: false,
+                        nft_Highest_Price: nft_Highest_Price,
+                        nft_Lowest_Price: nft_Lowest_Price,
+                        //Median: Median
+                        // data: result,
+                        // latestsale: (nft_result.length != 0) ? nft_result[0].data.last_sale : null
+                    });
+
+                });
+            });
+
+        } else {
+            res.send({
+                error: true,
+                message: "range Params is required value should be ('1d','7d','30d')"
+            });
+        }
     });
 });
 
