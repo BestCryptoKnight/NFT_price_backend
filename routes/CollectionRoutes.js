@@ -68,7 +68,7 @@ route.get('/getCollections/:range', function (req, res) {
     });
 });
 
-route.get('/getPageLinkSlugs/:range', function (req, res) {
+route.get('/getPageLinkSlugs', function (req, res) {
 
     Auth.Validate(req, res, function () {
         Collections.aggregate([
@@ -82,6 +82,7 @@ route.get('/getPageLinkSlugs/:range', function (req, res) {
             },
             {
                 $project: {
+                    _id: 0,
                     Slug: "$data.slug"
                 }
             },
