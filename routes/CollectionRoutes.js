@@ -68,6 +68,42 @@ route.get('/getCollections/:range', function (req, res) {
     });
 });
 
+route.get('/getPageLinkSlugs/:range', function (req, res) {
+
+    Auth.Validate(req, res, function () {
+        Collections.aggregate([
+            {
+                $sort: {"data.stats.one_day_volume": -1}
+            },
+            {
+                $match: {
+                    "data.slug": {$not: {$regex: "^untitled-collection.*"}}
+                }
+            },
+            {
+                $project: {
+                    Slug: "$data.slug"
+                }
+            },
+            {
+                $limit: 50
+            }], (err, result) => {
+            if (result != undefined) {
+                res.send({
+                    error: false,
+                    data: result,
+                });
+            } else {
+                res.send({
+                    error: true,
+                    message: "No Data Found",
+                    data: []
+                });
+            }
+        });
+    });
+});
+
 route.get('/getCollectionDetail/:slug', function (req, res) {
 
     Auth.Validate(req, res, function () {
