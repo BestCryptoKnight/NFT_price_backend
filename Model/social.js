@@ -3,18 +3,16 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 mongoose.connect(dburl, {sslValidate: false, useNewUrlParser: true, useUnifiedTopology: true});
-var CollectionsSchema = new Schema({
+
+var SocialSchema = new Schema({
+    type: String,
     data: {
         type: Object,
         default: {}
     },
-    active: {
-        type: Boolean,
-        default: true
-    },
-    //created: new Date()
+    PlainDate: String,
+    created: Date,
 });
 
-var CollectionsModel = mongoose.model('nft_collection', CollectionsSchema);
-
-module.exports = CollectionsModel;
+var SocialModel = mongoose.model('social_stats', SocialSchema);
+module.exports = SocialModel;

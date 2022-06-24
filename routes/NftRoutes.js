@@ -184,6 +184,132 @@ route.get('/getTraits/:slug', function (req, res) {
     });
 });
 
+route.get('/getNfts/:slug/:pageNum/:perPage', function (req, res) {
+    Auth.Validate(req, res, function () {
+        var isValid = false;
+        try {
+            var SlugFilter = req.params.slug;
+            var pageNum = parseInt(req.params.pageNum);
+            var perPage = parseInt(req.params.perPage);
+
+            if (pageNum >= 1 && perPage >= 1 && SlugFilter != null) {
+                var isValid = true;
+            }
+
+        } catch (e) {
+            isValid = false;
+        }
+
+        if (isValid) {
+            const limit = perPage;
+            var skip = limit * (pageNum - 1);
+
+            Nft.aggregate([
+                {
+                    $match: {
+                        "data.collection.slug": SlugFilter,
+                    }
+                },
+                {
+                    $sort: {
+                        "data.last_sale.payment_token.usd_price": -1
+                    }
+                },
+                {
+                    $skip: skip
+                },
+                {
+                    $limit: limit
+                }], (err, result) => {
+                var meta = {};
+                Nft.aggregate([
+                    {
+                        $match: {
+                            "data.collection.slug": SlugFilter,
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: null,
+                            count: {$sum: 1}
+                        }
+                    }], (error, CountData) => {
+
+                    var TotalNFts = 0;
+                    if (CountData != undefined && CountData.length != 0) {
+                        TotalNFts = CountData[0].count;
+                        meta.totalCount = TotalNFts;
+                        meta.currentPage = pageNum;
+                        meta.perPage = perPage;
+                        meta.pageCount = Math.ceil(TotalNFts / perPage);
+                    }
+
+
+                    if (result != undefined) {
+                        res.send({
+                            error: false,
+                            meta: meta,
+                            data: result,
+                        });
+                    } else {
+                        res.send({
+                            error: true,
+                            message: "No Data Found",
+                            data: []
+                        });
+                    }
+                });
+
+            });
+        } else {
+            res.send({
+                error: true,
+                message: "slug, pageNum" + " and perPage is Required"
+            });
+        }
+
+    });
+});
+
+route.get('/getLatestSaleNfts/:slug', function (req, res) {
+    Auth.Validate(req, res, function () {
+        var SlugFilter = req.params.slug;
+
+        Nft.aggregate([
+            {
+                $match: {
+                    "data.collection.slug": SlugFilter,
+                }
+            },
+            {
+                $sort: {
+                    "data.last_sale.event_timestamp": -1
+                }
+            },
+            {
+                $limit: 9
+            }], (err, result) => {
+
+            if (result != undefined) {
+                res.send({
+                    error: false,
+                    data: result,
+                });
+            } else {
+                res.send({
+                    error: true,
+                    message: "No Data Found",
+                    data: []
+                });
+            }
+
+
+        });
+
+
+    });
+});
+
 route.get('/get-cheaper-and-expensive-nft/:slug', function (req, res) {
 
     Auth.Validate(req, res, function () {
@@ -210,6 +336,12 @@ route.get('/get-cheaper-and-expensive-nft/:slug', function (req, res) {
                     }
                 },
                 {
+                    $project: {
+                        _id: 0,
+                        price: "$data.last_sale.total_price"
+                    }
+                },
+                {
                     $limit: 1
                 }], function (err, nft_Highest_Price) {
 
@@ -233,17 +365,29 @@ route.get('/get-cheaper-and-expensive-nft/:slug', function (req, res) {
                         }
                     },
                     {
+                        $project: {
+                            _id: 0,
+                            price: "$data.last_sale.total_price"
+                        }
+                    },
+                    {
                         $limit: 1
                     }], function (err, nft_Lowest_Price) {
 
-                    console.log(nft_Highest_Price[0].data.last_sale.total_price);
-                    //Median = (nft_Highest_Price[0].last_sale.total_price + nft_Lowest_Price[0].last_sale.total_price) / 2;
+                    //console.log(nft_Highest_Price[0].data.last_sale.total_price);
+                    try {
+                        Median = (parseFloat(nft_Highest_Price[0].price) + parseFloat(nft_Lowest_Price[0].price)) / 2;
+                    } catch (e) {
+                        Median = null;
+                    }
+
 
                     res.send({
                         error: false,
-                        nft_Highest_Price: nft_Highest_Price,
-                        nft_Lowest_Price: nft_Lowest_Price,
-                        //Median: Median
+                        message: (nft_Highest_Price.length == 0 && nft_Lowest_Price.length == 0) ? "Not Found" : "Found",
+                        nft_Highest_Price: (nft_Highest_Price.length != 0 && nft_Highest_Price != undefined) ? nft_Highest_Price[0].price : 0,
+                        nft_Lowest_Price: (nft_Lowest_Price.length != 0 && nft_Lowest_Price != undefined) ? nft_Lowest_Price[0].price : 0,
+                        Median: Median
                         // data: result,
                         // latestsale: (nft_result.length != 0) ? nft_result[0].data.last_sale : null
                     });

@@ -6,6 +6,8 @@ route.use(useragent.express());
 
 var Collections = require('../Model/collections');
 var Nft = require('../Model/nft');
+const Social = require('../Model/social');
+const Sales = require('../Model/sales_data');
 var Auth = require('../Modules/Auth');
 
 /*Nft.aggregate([{
@@ -68,8 +70,66 @@ route.get('/getCollections/:range', function (req, res) {
     });
 });
 
-route.get('/getPageLinkSlugs', function (req, res) {
+route.get('/getPageLinkSlugs/:range', function (req, res) {
 
+    Auth.Validate(req, res, function () {
+
+        const AllowedArr = ["1d", "7d", "30d"];
+        var Sort = {};
+
+        var rangeFilter = req.params.range;
+
+        if (rangeFilter != undefined && AllowedArr.includes(rangeFilter)) {
+            if (rangeFilter == "1d") {
+                Sort = {"data.stats.one_day_volume": -1};
+            } else if (rangeFilter == "7d") {
+                Sort = {"data.stats.seven_day_volume": -1};
+            } else if (rangeFilter == "30d") {
+                Sort = {"data.stats.thirty_day_volume": -1};
+            }
+
+            Collections.aggregate([
+                {
+                    $sort: Sort
+                },
+                {
+                    $match: {
+                        "data.slug": {$not: {$regex: "^untitled-collection.*"}}
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        Slug: "$data.slug",
+                        Name: "$data.name",
+                    }
+                },
+                {
+                    $limit: 50
+                }], (err, result) => {
+                if (result != undefined) {
+                    res.send({
+                        error: false,
+                        data: result,
+                    });
+                } else {
+                    res.send({
+                        error: true,
+                        message: "No Data Found",
+                        data: []
+                    });
+                }
+            });
+        } else {
+            res.send({
+                error: true,
+                message: "range Params is required value should be ('1d','7d','30d')"
+            });
+        }
+    });
+});
+
+route.get('/getCollections-sitemap', function (req, res) {
     Auth.Validate(req, res, function () {
         Collections.aggregate([
             {
@@ -81,14 +141,28 @@ route.get('/getPageLinkSlugs', function (req, res) {
                 }
             },
             {
+                $limit: 500
+            },
+            {
                 $project: {
                     _id: 0,
-                    Slug: "$data.slug"
+                    slug: "$data.slug"
                 }
             },
             {
-                $limit: 50
-            }], (err, result) => {
+                $group: {
+                    _id: null,
+                    slugs: {$addToSet: "$slug"}
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    slugs: "$slugs"
+                }
+            },
+        ], (err, result) => {
+
             if (result != undefined) {
                 res.send({
                     error: false,
@@ -102,6 +176,7 @@ route.get('/getPageLinkSlugs', function (req, res) {
                 });
             }
         });
+
     });
 });
 
@@ -142,6 +217,54 @@ route.get('/getCollectionDetail/:slug', function (req, res) {
                     });
 
                 })
+            })
+        } else {
+            res.send({
+                error: true,
+                message: "range Params is required value should be ('1d','7d','30d')"
+            });
+        }
+    });
+});
+
+route.get('/getTwitterData/:slug', function (req, res) {
+
+    Auth.Validate(req, res, function () {
+        var Sort = {};
+        var SlugFilter = req.params.slug;
+
+        if (SlugFilter != undefined) {
+
+            Social.aggregate([
+                {
+                    $match: {
+
+                        type: "Twitter",
+                        slug: SlugFilter
+                    }
+                },
+                {
+                    $sort: {
+                        PlainDate: 1
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        follower: "$data.public_metrics.followers_count",
+                        Date: "$PlainDate"
+                    }
+                }
+            ], (err, result) => {
+
+                //result.latestsale = nft_result[0].data.last_sale
+
+                res.send({
+                    error: false,
+                    data: result
+                });
+
+
             })
         } else {
             res.send({
