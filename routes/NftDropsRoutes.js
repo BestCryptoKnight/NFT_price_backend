@@ -20,6 +20,8 @@ route.post('/getTwitterData', function (req, res) {
                             TUsername = obj.match(/https?:\/\/(www\.)?twitter\.com\/(#!\/)?@?([^\/]*)/)[3];
                         } else if (obj.match(/https?:\/\/(www\.)?mobile.twitter\.com\/(#!\/)?@?([^\/]*)/) != null) {
                             TUsername = obj.match(/https?:\/\/(www\.)?mobile.twitter\.com\/(#!\/)?@?([^\/]*)/)[3]
+                        } else {
+                            TUsername = obj;
                         }
                         TwitterUsername.push(TUsername);
                     }
