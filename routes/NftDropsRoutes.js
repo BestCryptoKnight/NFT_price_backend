@@ -56,7 +56,7 @@ route.post('/getTwitterData', function (req, res) {
         } else {
             res.send({
                 error: true,
-                message: "Twitter UserNames are required"
+                message: "Twitter UserNames are required and should be an Array"
             });
         }
 
