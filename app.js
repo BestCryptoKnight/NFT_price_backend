@@ -3,10 +3,14 @@ const {PORT} = require('./config');
 var app = express();
 const CollectionsRoutes = require('./routes/CollectionRoutes');
 const NftsRoutes = require('./routes/NftRoutes');
+const NftDropsRoutes = require('./routes/NftDropsRoutes');
 const cors = require('cors');
 const request = require('request');
+const bodyParser = require('body-parser');
 
 app.use(cors({origin: '*'}));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
 
 app.get('/', function (req, res) {
     res.send(res.statusCode.toString());
@@ -27,5 +31,6 @@ app.get('/get-eth-stats', function (req, res) {
 
 app.use('/collection', CollectionsRoutes);
 app.use('/nft', NftsRoutes);
+app.use('/nftdrops', NftDropsRoutes);
 
 app.listen(PORT, () => console.log(`Cron Jobs server currently running on port ${PORT}`));

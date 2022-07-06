@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const {ENV} = process.env;
 exports.API_KEY = process.env.X_API_KEY;
+exports.API_KEY_NFT_DROPS = process.env.X_API_KEY_NFT_DROPS;
 
 exports.PORT = process.env.PORT;
 var DATABASEUSERNAME = "user1", DATABASEPASSWORD = "wroiSRXQ1GXySQ9S", DATABASEHOST, DATABASENAME;
