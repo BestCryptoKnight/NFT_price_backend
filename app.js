@@ -22,7 +22,7 @@ app.get('/healthcheck', function (req, res) {
 
 app.get('/get-eth-stats', function (req, res) {
     request('http://ec2-54-89-245-85.compute-1.amazonaws.com:8081/getEthValue', function (error, response, body) {
-        if (response.statusCode == 200)
+        if (response != undefined && response.statusCode == 200)
             res.send({success: true, data: JSON.parse(body)});
         else
             res.send({success: false, message: "Api Data Not Found"});
