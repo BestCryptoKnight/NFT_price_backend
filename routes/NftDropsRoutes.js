@@ -5,6 +5,7 @@ route.use(useragent.express());
 
 var NftDropsStatsData = require('../Model/NftDropsTwitter_data');
 var Auth = require('../Modules/Auth');
+const NFTDropsSocial = require('../Model/NftDropsSocial');
 
 route.post('/getTwitterData', function (req, res) {
     Auth.NftDropsValidate(req, res, function () {
@@ -28,22 +29,37 @@ route.post('/getTwitterData', function (req, res) {
                 }
                 if (TwitterUsername.length != 0) {
 
-                    NftDropsStatsData.aggregate([
+                    NFTDropsSocial.aggregate([
                         {
                             $match: {
-                                twitterUsername: {$in: TwitterUsername}
+                                "data.username": {$in: TwitterUsername},
+                                type: "Twitter"
+                            }
+                        },
+                        {
+                            $sort: {
+                                "data.username": 1,
+                                PlainDate: 1
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: "$data.username",
+                                data: {
+                                    $push: {date: "$PlainDate", follower: "$data.public_metrics.followers_count"}
+                                }
                             }
                         },
                         {
                             $project: {
                                 _id: 0,
-                                username: "$data.username",
-                                follower: "$data.public_metrics.followers_count"
+                                username: "$_id",
+                                data: "$data"
                             }
                         }], (err, result) => {
                         res.send({
                             error: false,
-                            data: result
+                            response: result
                         });
                     })
                 } else {
