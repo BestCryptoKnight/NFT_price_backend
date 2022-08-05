@@ -1,6 +1,7 @@
 const express = require('express');
 const route = express.Router();
 var useragent = require('express-useragent');
+const moment = require('moment');
 route.use(useragent.express());
 
 var NftDropsStatsData = require('../Model/NftDropsTwitter_data');
@@ -57,10 +58,29 @@ route.post('/getTwitterData', function (req, res) {
                                 data: "$data"
                             }
                         }], (err, result) => {
-                        res.send({
-                            error: false,
-                            response: result
-                        });
+
+
+                        if (result !== undefined && result.length !== 0) {
+                            (async () => {
+                                for await (var [index, obj] of result.entries()) {
+                                    for await (var [Innerindex, Innerobj] of obj.data.entries()) {
+                                        Innerobj.Fulldate = Innerobj.date;
+                                        Innerobj.date = moment(new Date(Innerobj.date)).format('DD/MM');
+                                    }
+                                }
+                                res.send({
+                                    error: false,
+                                    response: result
+                                });
+                            })();
+                        } else {
+                            res.send({
+                                error: false,
+                                response: result
+                            });
+                        }
+
+
                     })
                 } else {
                     res.send({

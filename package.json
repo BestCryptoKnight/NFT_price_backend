@@ -24,6 +24,7 @@
     "express-useragent": "^1.0.15",
     "http-errors": "~1.6.3",
     "isodate": "^0.1.4",
+    "moment": "^2.29.4",
     "mongoose": "^5.13.2",
     "node-fetch": "^3.2.6",
     "path": "^0.12.7",
