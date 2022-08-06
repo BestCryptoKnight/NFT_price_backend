@@ -275,6 +275,54 @@ route.get('/getTwitterData/:slug', function (req, res) {
     });
 });
 
+route.get('/getDiscordData/:slug', function (req, res) {
+
+    Auth.Validate(req, res, function () {
+        var Sort = {};
+        var SlugFilter = req.params.slug;
+
+        if (SlugFilter != undefined) {
+
+            Social.aggregate([
+                {
+                    $match: {
+
+                        type: "Discord",
+                        slug: SlugFilter
+                    }
+                },
+                {
+                    $sort: {
+                        PlainDate: 1
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        follower: "$data.approximate_member_count",
+                        Date: "$PlainDate"
+                    }
+                }
+            ], (err, result) => {
+
+                //result.latestsale = nft_result[0].data.last_sale
+
+                res.send({
+                    error: false,
+                    data: result
+                });
+
+
+            })
+        } else {
+            res.send({
+                error: true,
+                message: "range Params is required value should be ('1d','7d','30d')"
+            });
+        }
+    });
+});
+
 route.get('/getSalesData/:slug', function (req, res) {
 
     Auth.Validate(req, res, function () {
