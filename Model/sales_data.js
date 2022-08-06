@@ -14,5 +14,5 @@ var SalesSchema = new Schema({
     created: Date,
 });
 
-var SalesModel = mongoose.model('sales_data', SalesSchema);
+var SalesModel = mongoose.model('sales_data', SalesSchema, 'sales_data');
 module.exports = SalesModel;

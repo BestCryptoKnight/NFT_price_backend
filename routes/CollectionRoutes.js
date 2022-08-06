@@ -348,10 +348,7 @@ route.get('/getSalesData/:slug', function (req, res) {
                         price: "$data.floor_price",
                         Date: "$PlainDate"
                     }
-                }
-            ], (err, result) => {
-
-                //result.latestsale = nft_result[0].data.last_sale
+                }], (err, result) => {
 
                 res.send({
                     error: false,
@@ -363,7 +360,7 @@ route.get('/getSalesData/:slug', function (req, res) {
         } else {
             res.send({
                 error: true,
-                message: "range Params is required value should be ('1d','7d','30d')"
+                message: "Slug is Required"
             });
         }
     });
