@@ -99,4 +99,85 @@ route.post('/getTwitterData', function (req, res) {
     });
 });
 
+route.post('/getDiscordData', function (req, res) {
+    Auth.NftDropsValidate(req, res, function () {
+        var DiscordUsername = [];
+        //var DiscordUsername = req.body.discordUsername;
+
+        if (req.body.discordUsername != undefined && Array.isArray(req.body.discordUsername)) {
+            (async () => {
+                for await (var [Lineindex, obj] of req.body.discordUsername.entries()) {
+                    if (obj != "" && obj != null && obj != undefined) {
+                        DiscordUserName = obj.substring(obj.lastIndexOf('/') + 1);
+                        DiscordUsername.push(DiscordUserName);
+                    }
+                }
+                if (DiscordUsername.length != 0) {
+                    NFTDropsSocial.aggregate([
+                        {
+                            $match: {
+                                "data.code": {$in: DiscordUsername},
+                                type: "Discord"
+                            }
+                        },
+                        {
+                            $sort: {
+                                "data.code": 1,
+                                PlainDate: 1
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: "$data.code",
+                                data: {
+                                    $push: {date: "$PlainDate", follower: "$data.approximate_member_count"}
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                username: "$_id",
+                                data: "$data"
+                            }
+                        }], (err, result) => {
+                        if (result !== undefined && result.length !== 0) {
+                            (async () => {
+                                for await (var [index, obj] of result.entries()) {
+                                    for await (var [Innerindex, Innerobj] of obj.data.entries()) {
+                                        Innerobj.Fulldate = Innerobj.date;
+                                        Innerobj.date = moment(new Date(Innerobj.date)).format('DD/MM');
+                                    }
+                                }
+                                res.send({
+                                    error: false,
+                                    response: result
+                                });
+                            })();
+                        } else {
+                            res.send({
+                                error: false,
+                                response: result
+                            });
+                        }
+
+
+                    })
+                } else {
+                    res.send({
+                        error: true,
+                        message: "Discord UserNames are required"
+                    });
+                }
+            })();
+        } else {
+            res.send({
+                error: true,
+                message: "Discord UserNames are required and should be an Array"
+            });
+        }
+
+    });
+});
+
 module.exports = route
