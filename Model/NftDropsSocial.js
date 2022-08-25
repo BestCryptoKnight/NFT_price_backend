@@ -10,6 +10,10 @@ var SocialSchema = new Schema({
         type: Object,
         default: {}
     },
+    Trending: {
+        type: Object,
+        default: {}
+    },
     PlainDate: String,
     created: Date,
 });

@@ -47,7 +47,11 @@ route.post('/getTwitterData', function (req, res) {
                             $group: {
                                 _id: "$data.username",
                                 data: {
-                                    $push: {date: "$PlainDate", follower: "$data.public_metrics.followers_count"}
+                                    $push: {
+                                        date: "$PlainDate",
+                                        follower: "$data.public_metrics.followers_count",
+                                        Trending: "$Trending"
+                                    }
                                 }
                             }
                         },
@@ -55,17 +59,19 @@ route.post('/getTwitterData', function (req, res) {
                             $project: {
                                 _id: 0,
                                 username: "$_id",
-                                data: "$data"
+                                data: 1
                             }
                         }], (err, result) => {
-
-
                         if (result !== undefined && result.length !== 0) {
                             (async () => {
                                 for await (var [index, obj] of result.entries()) {
                                     for await (var [Innerindex, Innerobj] of obj.data.entries()) {
                                         Innerobj.Fulldate = Innerobj.date;
                                         Innerobj.date = moment(new Date(Innerobj.date)).format('DD/MM');
+                                        Innerobj.IsTrending = (Innerobj.Trending !== undefined) ? Innerobj.Trending.IsTrending : false;
+                                        delete Innerobj.Trending;
+
+
                                     }
                                 }
                                 res.send({
@@ -130,7 +136,11 @@ route.post('/getDiscordData', function (req, res) {
                             $group: {
                                 _id: "$data.code",
                                 data: {
-                                    $push: {date: "$PlainDate", follower: "$data.approximate_member_count"}
+                                    $push: {
+                                        date: "$PlainDate",
+                                        follower: "$data.approximate_member_count",
+                                        Trending: "$Trending"
+                                    }
                                 }
                             }
                         },
@@ -138,7 +148,7 @@ route.post('/getDiscordData', function (req, res) {
                             $project: {
                                 _id: 0,
                                 username: "$_id",
-                                data: "$data"
+                                data: 1,
                             }
                         }], (err, result) => {
                         if (result !== undefined && result.length !== 0) {
@@ -147,6 +157,8 @@ route.post('/getDiscordData', function (req, res) {
                                     for await (var [Innerindex, Innerobj] of obj.data.entries()) {
                                         Innerobj.Fulldate = Innerobj.date;
                                         Innerobj.date = moment(new Date(Innerobj.date)).format('DD/MM');
+                                        Innerobj.IsTrending = (Innerobj.Trending !== undefined) ? Innerobj.Trending.IsTrending : false;
+                                        delete Innerobj.Trending;
                                     }
                                 }
                                 res.send({
