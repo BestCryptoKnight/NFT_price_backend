@@ -184,7 +184,7 @@ route.get('/getTraits/:slug', function (req, res) {
     });
 });
 
-route.get('/getNfts/:slug/:pageNum/:perPage', function (req, res) {
+/*route.get('/getNfts/:slug/:pageNum/:perPage', function (req, res) {
     Auth.Validate(req, res, function () {
         var isValid = false;
         try {
@@ -261,6 +261,135 @@ route.get('/getNfts/:slug/:pageNum/:perPage', function (req, res) {
                 });
 
             });
+        } else {
+            res.send({
+                error: true,
+                message: "slug, pageNum" + " and perPage is Required"
+            });
+        }
+
+    });
+});*/
+
+route.get('/getNfts/:slug/:pageNum/:perPage', function (req, res) {
+    Auth.Validate(req, res, async function () {
+        var isValid = false;
+        try {
+            var SlugFilter = req.params.slug;
+            var pageNum = parseInt(req.params.pageNum);
+            var perPage = parseInt(req.params.perPage);
+
+            if (pageNum >= 1 && perPage >= 1 && SlugFilter != null) {
+                var isValid = true;
+            }
+
+        } catch (e) {
+            isValid = false;
+        }
+
+        const getNthItem = (index) => {
+            return Nft.aggregate([
+
+                {
+                    $match: {
+                        "data.collection.slug": SlugFilter,
+                        "data.last_sale": {$ne: null},
+                    }
+                },
+                {
+                    $addFields: {
+                        totalPrice: {$toDecimal: "$data.last_sale.total_price"}
+                    }
+                },
+                {
+                    $sort: {
+                        totalPrice: -1
+                    }
+                },
+                {
+                    $skip: index
+                },
+                {
+                    $limit: 1
+                }
+            ])
+        }
+        if (isValid) {
+            const limit = perPage;
+            var skip = limit * (pageNum - 1);
+            const result = await Nft.aggregate([
+                {
+                    $match: {
+                        "data.collection.slug": SlugFilter,
+                        "data.last_sale": {$ne: null},
+                    }
+                },
+                {
+                    $addFields: {
+                        totalPrice: {$toDecimal: "$data.last_sale.total_price"}
+                    }
+                },
+                {
+                    $sort: {
+                        totalPrice: -1
+                    }
+                },
+                {
+                    $skip: skip
+                },
+                {
+                    $limit: limit
+                }]);
+            var meta = {};
+
+            const CountData = await Nft.aggregate([
+                {
+                    $match: {
+                        "data.collection.slug": SlugFilter,
+                        "data.last_sale": {$ne: null},
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        count: {$sum: 1}
+                    }
+                }]);
+            var percentle10;
+            var percentle50;
+            var percentle90;
+            var TotalNFts = 0;
+            if (CountData != undefined && CountData.length != 0) {
+                TotalNFts = CountData[0].count;
+                meta.totalCount = TotalNFts;
+                meta.currentPage = pageNum;
+                meta.perPage = perPage;
+                meta.pageCount = Math.ceil(TotalNFts / perPage);
+            }
+            var index_percentle10 = Math.round(TotalNFts * 9 / 10);
+            var index_percentle50 = Math.round(TotalNFts * 5 / 10);
+            var index_percentle90 = Math.round(TotalNFts * 1 / 10);
+
+
+            const tenth = await getNthItem(index_percentle10);
+            const fiftyth = await getNthItem(index_percentle50);
+            const ninetyth = await getNthItem(index_percentle90);
+            meta.percentle10 = tenth[0].totalPrice;
+            meta.percentle50 = fiftyth[0].totalPrice;
+            meta.percentle90 = ninetyth[0].totalPrice;
+            if (result != undefined) {
+                res.send({
+                    error: false,
+                    meta: meta,
+                    data: result,
+                });
+            } else {
+                res.send({
+                    error: true,
+                    message: "No Data Found",
+                    data: []
+                });
+            }
         } else {
             res.send({
                 error: true,
