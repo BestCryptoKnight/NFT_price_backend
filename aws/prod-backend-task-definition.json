@@ -1,0 +1,32 @@
+{
+    "family": "prod-nft-stats-api",
+    "executionRoleArn": "arn:aws:iam::873931742302:role/ecsTaskExecutionRole-prod-nft-stats",
+    "networkMode": "awsvpc",
+    "containerDefinitions": [
+      {
+        "name": "prod-nft-stats-api",
+        "image": "REPOSITORY_URL/REPOSITORY_IMAGE:REPOSITORY_TAG",
+        "portMappings": [
+          {
+            "containerPort": 3000,
+            "hostPort": 3000,
+            "protocol": "tcp"
+          }
+        ],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+            "awslogs-group": "/ecs/prod/nft-stats-cluster/nft-stats-api",
+            "awslogs-region": "us-east-1",
+            "awslogs-stream-prefix": "ecs"
+          }
+        },
+        "essential": true
+      }
+    ],
+    "requiresCompatibilities": [
+      "FARGATE"
+    ],
+    "cpu": "1024",
+    "memory": "2048"
+}

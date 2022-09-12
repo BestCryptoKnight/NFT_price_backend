@@ -1,0 +1,44 @@
+services:
+  - docker:18-dind
+
+variables:
+  REPOSITORY_URL: 873931742302.dkr.ecr.us-east-1.amazonaws.com
+
+stages:
+  - deploy
+
+deploy_prod:
+  stage: deploy
+  image: docker:latest
+
+  when: manual
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+  variables:
+    REPOSITORY_IMAGE: prod-nft-stats-api
+    API_TASK_DEFINITION: aws/prod-backend-task-definition.json
+    ECS_CLUSTER: prod-nft-stats-cluster
+    ECS_SERVICE: prod-nft-stats-api-service
+    CONTAINER_NAME: prod-nft-stats-api
+    DOCKER_TLS_CERTDIR: ""
+
+  before_script:
+    - apk add --no-cache --update curl jq py-pip
+    - pip install awscli
+    - cat "$PROD_ENV" > "$(pwd)/.env"
+  script:
+    - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $REPOSITORY_URL
+
+    # Build docker image
+    - docker build -t $REPOSITORY_URL/$REPOSITORY_IMAGE:$CI_COMMIT_SHORT_SHA .
+    - docker push $REPOSITORY_URL/$REPOSITORY_IMAGE:$CI_COMMIT_SHORT_SHA
+
+    # Configure task definition - API
+    - sed -i -e "s/REPOSITORY_URL/$REPOSITORY_URL/g" $API_TASK_DEFINITION
+    - sed -i -e "s/REPOSITORY_IMAGE/$REPOSITORY_IMAGE/g" $API_TASK_DEFINITION
+    - sed -i -e "s/REPOSITORY_TAG/$CI_COMMIT_SHORT_SHA/g" $API_TASK_DEFINITION
+
+    # Update tasks and services - API
+    - API_REV=$(aws ecs register-task-definition --region $AWS_DEFAULT_REGION --cli-input-json file://$API_TASK_DEFINITION | jq --raw-output '.taskDefinition.revision')
+    - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition ${CONTAINER_NAME}:${API_REV} --region $AWS_DEFAULT_REGION
