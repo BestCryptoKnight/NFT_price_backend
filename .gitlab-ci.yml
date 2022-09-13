@@ -42,3 +42,4 @@ deploy_prod:
     # Update tasks and services - API
     - API_REV=$(aws ecs register-task-definition --region $AWS_DEFAULT_REGION --cli-input-json file://$API_TASK_DEFINITION | jq --raw-output '.taskDefinition.revision')
     - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition ${CONTAINER_NAME}:${API_REV} --region $AWS_DEFAULT_REGION
+    - aws ecs wait services-stable --cluster $ECS_CLUSTER --service $ECS_SERVICE
