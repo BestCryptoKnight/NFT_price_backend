@@ -36,6 +36,18 @@ exports.removeSpaces = function (str) {
     return str.replace(/\s+/g, ' ');
 }
 
+
+exports.GetHighResolutionURI = function (url) {
+    //let URLInfo = new URL(obj.data.image_url);
+    let URLInfo = new URL(url);
+    if (URLInfo.host.includes('lh3.googleusercontent.com')) {
+        ImgObjectArr = url.split("=s");
+        return ImgObjectArr[0] + "=s1020";
+    } else {
+        return url;
+    }
+}
+
 exports.SendEmail = async function (Sender, Email, Subject, Emailtext) {
     let transporter = nodemailer.createTransport({
         host: Sender.emaildetail.host,

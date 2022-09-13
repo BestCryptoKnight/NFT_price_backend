@@ -9,6 +9,7 @@ var Nft = require('../Model/nft');
 const Social = require('../Model/social');
 const Sales = require('../Model/sales_data');
 var Auth = require('../Modules/Auth');
+var FN = require('../Modules/general');
 
 /*Nft.aggregate([{
     $group: {
@@ -61,16 +62,7 @@ route.get('/getCollections/:range', function (req, res) {
                             delete obj.data.fees;
                             delete obj.data.display_data;
                             // expected output: 1
-
-
-                            let URLInfo = new URL(obj.data.image_url);
-
-                            if (URLInfo.host.includes('lh3.googleusercontent.com')) {
-                                ImgObjectArr = obj.data.image_url.split("=s");
-                                obj.data.image_url = ImgObjectArr[0] + "=s1020";
-                            }
-
-                            //console.log(obj.data.image_url);
+                            obj.data.image_url = FN.GetHighResolutionURI(obj.data.image_url);
 
                             await resp.push(obj);
                         }
@@ -234,14 +226,26 @@ route.get('/getCollectionDetail/:slug', function (req, res) {
                     $limit: 1
                 }], function (err, nft_result) {
 
-                    //result.latestsale = nft_result[0].data.last_sale
+                    if (result !== undefined && result.length !== 0) {
+                        delete result[0].data.payment_tokens;
+                        delete result[0].data.primary_asset_contracts;
+                        delete result[0].data.fees;
+                        delete result[0].data.display_data;
 
-                    res.send({
-                        error: false,
-                        data: result,
-                        latestsale: (nft_result.length != 0) ? nft_result[0].data.last_sale : null
-                    });
+                        result[0].data.image_url = FN.GetHighResolutionURI(result[0].data.image_url);
 
+                        res.send({
+                            error: false,
+                            data: result,
+                            latestsale: (nft_result.length != 0) ? nft_result[0].data.last_sale : null
+                        });
+                    } else {
+                        res.send({
+                            error: true,
+                            data: [],
+                            latestsale: null
+                        });
+                    }
                 })
             })
         } else {
