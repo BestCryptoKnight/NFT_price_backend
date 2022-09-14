@@ -399,8 +399,11 @@ route.get('/getSalesData/:slug', function (req, res) {
                 {
                     $project: {
                         _id: 0,
-                        price: "$data.floor_price",
-                        Date: "$PlainDate"
+                        //price: "$data.floor_price",
+                        Date: "$PlainDate",
+                        total_sales: "$data.total_sales",
+                        floor_price: "$data.floor_price",
+                        total_volume: "$data.total_volume"
                     }
                 }], (err, result) => {
 
