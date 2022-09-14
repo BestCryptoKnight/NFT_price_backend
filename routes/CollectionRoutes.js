@@ -56,6 +56,30 @@ route.get('/getCollections/:range', function (req, res) {
                     (async function () {
                         for await (const [index, obj] of result.entries()) {
                             //console.log(obj);
+                            let StatsObj = obj.data.stats;
+
+
+                            obj.data.stats = {
+                                one_day_volume: StatsObj.one_day_volume,
+                                one_day_sales: StatsObj.one_day_sales,
+                                one_day_change: StatsObj.one_day_change,
+
+                                seven_day_volume: StatsObj.seven_day_volume,
+                                seven_day_sales: StatsObj.seven_day_sales,
+                                seven_day_change: StatsObj.seven_day_change,
+
+
+                                thirty_day_volume: StatsObj.thirty_day_volume,
+                                thirty_day_sales: StatsObj.thirty_day_sales,
+                                thirty_day_change: StatsObj.thirty_day_change,
+
+
+                                supply_ratio_ratio: `${StatsObj.num_owners}/${StatsObj.total_supply}`,
+                                supply_ratio_pecentage: (StatsObj.num_owners / StatsObj.total_supply) * 100,
+                                floor_price: StatsObj.floor_price,
+                                market_capture: StatsObj.market_cap,
+                            }
+
                             //delete obj.data.stats;
                             delete obj.data.payment_tokens;
                             delete obj.data.primary_asset_contracts;
