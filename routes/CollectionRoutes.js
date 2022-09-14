@@ -419,7 +419,7 @@ route.get('/getTodayTopCollections', function (req, res) {
                 (async function () {
                     for await (const [index, obj] of result.entries()) {
                         //console.log(obj);
-                        delete obj.data.stats;
+                        //delete obj.data.stats;
                         delete obj.data.payment_tokens;
                         delete obj.data.primary_asset_contracts;
                         delete obj.data.fees;
