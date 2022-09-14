@@ -413,10 +413,35 @@ route.get('/getTodayTopCollections', function (req, res) {
             {
                 $limit: 9
             }], (err, result) => {
-            res.send({
-                error: false,
-                data: result,
-            });
+            var resp = [];
+            if (result != undefined) {
+
+                (async function () {
+                    for await (const [index, obj] of result.entries()) {
+                        //console.log(obj);
+                        delete obj.data.stats;
+                        delete obj.data.payment_tokens;
+                        delete obj.data.primary_asset_contracts;
+                        delete obj.data.fees;
+                        delete obj.data.display_data;
+                        // expected output: 1
+                        obj.data.image_url = FN.GetHighResolutionURI(obj.data.image_url);
+
+                        await resp.push(obj);
+                    }
+                    res.send({
+                        error: false,
+                        data: resp,
+                    });
+                })();
+            } else {
+                res.send({
+                    error: true,
+                    data: [],
+                });
+            }
+
+
         })
 
     });
