@@ -58,7 +58,6 @@ route.get('/getCollections/:range', function (req, res) {
                             //console.log(obj);
                             let StatsObj = obj.data.stats;
 
-
                             obj.data.stats = {
                                 one_day_volume: StatsObj.one_day_volume,
                                 one_day_sales: StatsObj.one_day_sales,
@@ -252,6 +251,7 @@ route.get('/getCollectionDetail/:slug', function (req, res) {
                 }], function (err, nft_result) {
 
                     if (result !== undefined && result.length !== 0) {
+                        delete result[0].data.traits;
                         delete result[0].data.payment_tokens;
                         delete result[0].data.primary_asset_contracts;
                         delete result[0].data.fees;
@@ -448,6 +448,7 @@ route.get('/getTodayTopCollections', function (req, res) {
                     for await (const [index, obj] of result.entries()) {
                         //console.log(obj);
                         //delete obj.data.stats;
+                        delete obj.data.traits;
                         delete obj.data.payment_tokens;
                         delete obj.data.primary_asset_contracts;
                         delete obj.data.fees;
