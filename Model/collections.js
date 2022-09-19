@@ -8,6 +8,10 @@ var CollectionsSchema = new Schema({
         type: Object,
         default: {}
     },
+    chain: {
+        type: Object,
+        default: {}
+    },
     active: {
         type: Boolean,
         default: true

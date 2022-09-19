@@ -81,6 +81,7 @@ route.get('/getCollections/:range', function (req, res) {
                             }
 
                             //delete obj.data.stats;
+                            delete obj.data.traits;
                             delete obj.data.payment_tokens;
                             delete obj.data.primary_asset_contracts;
                             delete obj.data.fees;
