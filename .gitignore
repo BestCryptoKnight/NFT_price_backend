@@ -7,3 +7,5 @@ Pixlate-txt/*
 Pixlate-csv/*
 VideoFiles/*
 *.log
+.env/*
+/aws/*
